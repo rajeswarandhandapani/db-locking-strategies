@@ -43,6 +43,35 @@ To create a Spring Boot project that demonstrates various database locking strat
 4. Add other strategies and scenarios
 5. Documentation and test coverage
 
+## Development Approach: Test-Driven Development (TDD)
+
+This project will be developed using a Test-Driven Development (TDD) approach to ensure correctness, clarity, and maintainability. The TDD workflow will be applied to each locking strategy and scenario as follows:
+
+### TDD Workflow
+1. **Write a Failing Test**: For each feature or scenario (e.g., Pessimistic Locking in ticket booking), start by writing a test that describes the expected behavior, including race condition handling and correct locking.
+2. **Implement Minimal Code**: Write the minimal amount of code necessary to make the test pass.
+3. **Refactor**: Clean up and refactor the code for readability and maintainability, ensuring all tests still pass.
+4. **Repeat**: Continue this cycle for each new feature, scenario, or locking strategy.
+
+### Test Organization
+- All tests will be placed under `/src/test/java` following the package structure.
+- Scenario-based test classes will be created, e.g., `PessimisticLockingTest`, `OptimisticLockingTest`, etc.
+- Tests will cover both positive and negative cases, including concurrent access and race conditions.
+
+### Tools & Frameworks
+- **JUnit 5** for unit and integration testing
+- **Mockito** for mocking dependencies where needed
+- **Spring Boot Test** for end-to-end and API tests
+
+### Example TDD Steps for a Locking Strategy
+1. Write a test simulating concurrent access to a shared resource (e.g., booking the same ticket).
+2. Run the test and observe failure (expected at first).
+3. Implement the locking mechanism.
+4. Run the test and ensure it passes.
+5. Refactor and document the solution.
+
+This approach will be followed for each milestone and locking strategy to ensure robust, well-documented, and reliable code.
+
 ## Repository Structure (Proposed)
 - `/src/main/java` - Source code
 - `/src/test/java` - Test cases
