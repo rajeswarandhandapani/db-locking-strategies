@@ -1,0 +1,13 @@
+# Use official MySQL 8 image
+FROM mysql:8.0.43
+
+# Set environment variables for root password and database name
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=locking_demo
+
+# Optional: set a shorter lock wait timeout for testing
+CMD ["--innodb_lock_wait_timeout=10"]
+
+
+# docker build -f Dockerfile.mysql -t my-mysql .
+# docker run -d -p 3306:3306 --name mysql-locking-demo my-mysql
