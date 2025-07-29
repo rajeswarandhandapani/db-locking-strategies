@@ -50,7 +50,7 @@ public class PessimisticLockingTest {
             TransactionStatus status = transactionManager.getTransaction(def);
             logger.info("TX1 started, trying to acquire lock on ticket: ");
             try {
-                Ticket t1 = ticketRepository.findByIdAndName(1L, "Concert");
+                Ticket t1 = ticketRepository.findByIdAndName(ticket.getId(), ticket.getName());
                 logger.info("TX1 acquired lock on ticket: {}", t1);
                 t1.setBooked(true);
                 latch.countDown(); // Signal tx2 to start
@@ -72,7 +72,7 @@ public class PessimisticLockingTest {
             TransactionStatus status = transactionManager.getTransaction(def);
             logger.info("TX2 started, trying to acquire lock on ticket: ");
             try {
-                Ticket t2 = ticketRepository.findByIdAndName(1L, "Concert");
+                Ticket t2 = ticketRepository.findByIdAndName(ticket.getId(), ticket.getName());
                 logger.info("TX2 acquired lock on ticket: {}", t2);
                 transactionManager.commit(status);
                 return null;
@@ -90,8 +90,8 @@ public class PessimisticLockingTest {
             exception1 = e;
         }
         try {
-            exception2 = tx2.get(5, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (java.util.concurrent.TimeoutException te) {
+            exception2 = tx2.get(5, TimeUnit.SECONDS);
+        } catch (TimeoutException te) {
             exception2 = te;
         }
         executor.shutdown();
