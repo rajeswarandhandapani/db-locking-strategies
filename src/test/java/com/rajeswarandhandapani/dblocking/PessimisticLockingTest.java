@@ -1,16 +1,16 @@
 
 package com.rajeswarandhandapani.dblocking;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-// ...existing imports...
 import com.rajeswarandhandapani.dblocking.model.Ticket;
 import com.rajeswarandhandapani.dblocking.repository.TicketRepository;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import static org.junit.jupiter.api.Assertions.*;
-import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -18,15 +18,21 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.concurrent.*;
 
-@DataJpaTest
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Commit
 public class PessimisticLockingTest {
-    // No Testcontainers or DynamicPropertySource needed. Use application.yaml config.
+    
     @Autowired
     private TicketRepository ticketRepository;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
+
+    private static final Logger logger = LoggerFactory.getLogger(PessimisticLockingTest.class);
 
     @Test
     void testPessimisticLockingBlocksConcurrentUpdate() throws Exception {
@@ -35,7 +41,8 @@ public class PessimisticLockingTest {
         Ticket temp = new Ticket();
         temp.setName("Concert");
         temp.setBooked(false);
-        ticket = ticketRepository.save(temp);
+        ticket = ticketRepository.saveAndFlush(temp);
+        logger.info("Persisted ticket: {}", ticket);
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(1);
@@ -45,11 +52,13 @@ public class PessimisticLockingTest {
             def.setName("TX1");
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
             TransactionStatus status = transactionManager.getTransaction(def);
+            logger.info("TX1 started, trying to acquire lock on ticket: ");
             try {
-                Ticket t1 = ticketRepository.findByIdAndName(ticket.getId(), ticket.getName());
+                Ticket t1 = ticketRepository.findByIdAndName(1L, "Concert");
+                logger.info("TX1 acquired lock on ticket: {}", t1);
                 t1.setBooked(true);
                 latch.countDown(); // Signal tx2 to start
-                Thread.sleep(2000); // Hold the lock for a while
+                Thread.sleep(10000); // Hold the lock for a while
                 ticketRepository.save(t1);
                 transactionManager.commit(status);
                 return null;
@@ -65,8 +74,10 @@ public class PessimisticLockingTest {
             def.setName("TX2");
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
             TransactionStatus status = transactionManager.getTransaction(def);
+            logger.info("TX2 started, trying to acquire lock on ticket: ");
             try {
-                ticketRepository.findByIdAndName(ticket.getId(), ticket.getName());
+                Ticket t2 = ticketRepository.findByIdAndName(1L, "Concert");
+                logger.info("TX2 acquired lock on ticket: {}", t2);
                 transactionManager.commit(status);
                 return null;
             } catch (Exception e) {
@@ -89,9 +100,11 @@ public class PessimisticLockingTest {
         }
         executor.shutdown();
 
-        // At least one transaction must fail due to pessimistic locking or timeout
-        boolean atLeastOneFailed = isLockOrTimeout(exception1) || isLockOrTimeout(exception2);
-        assertTrue(atLeastOneFailed, "Expected at least one transaction to fail due to pessimistic locking or timeout. Got: tx1=" + exception1 + ", tx2=" + exception2);
+        // Ensure tx1 succeeded
+        assertNull(exception1, "First transaction should succeed, but failed with: " + exception1);
+
+        // Ensure tx2 failed due to pessimistic locking or timeout
+        assertTrue(isLockOrTimeout(exception2), "Second transaction should fail due to pessimistic locking or timeout. Got: " + exception2);
 
     }
 
