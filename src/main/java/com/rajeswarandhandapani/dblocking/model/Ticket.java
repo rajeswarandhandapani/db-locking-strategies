@@ -21,4 +21,14 @@ public class Ticket {
 
     public boolean isBooked() { return booked; }
     public void setBooked(boolean booked) { this.booked = booked; }
+
+
+    @Override
+    public String toString() {
+        return "Ticket{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", booked=" + booked +
+                '}';
+    }
 }
