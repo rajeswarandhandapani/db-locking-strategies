@@ -41,11 +41,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- MySQL JDBC driver for MySQL support -->
+
+		<!-- H2 Database for in-memory testing -->
 		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>9.3.0</version>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Spring Data JPA for persistence and transaction management -->
@@ -54,17 +55,6 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		
-		<!-- Testcontainers for MySQL integration testing -->
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mysql</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
