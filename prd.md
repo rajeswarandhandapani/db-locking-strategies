@@ -79,6 +79,37 @@ This approach will be followed for each milestone and locking strategy to ensure
 - `/README.md` - Project overview
 - `/prd.md` - Product Requirements Document
 
+## Current Implementation Status
+
+### ✅ Completed Features
+- **Pessimistic Locking**: Implemented with `Ticket` entity using `@Lock(LockModeType.PESSIMISTIC_WRITE)` annotation
+- **Optimistic Locking**: Implemented with `InventoryItem` entity using `@Version` annotation
+- **Test Coverage**: Comprehensive concurrent testing for both locking strategies
+- **Entity Models**: Clean JPA entities with proper annotations
+- **Repository Layer**: Spring Data JPA repositories with custom locking methods
+
+## Next Steps (Minimal Enhancement)
+
+### 1. **Add REST API Endpoints**
+- Create simple controllers to demonstrate locking via HTTP:
+  - `POST /tickets/{id}/book` - Demonstrate pessimistic locking
+  - `PUT /inventory/{id}/update-quantity` - Demonstrate optimistic locking
+- Basic error handling for lock failures
+
+### 2. **Improve Documentation**
+- Add simple README with usage examples
+- Document when to use each locking strategy
+- Include basic sequence diagrams or flow charts
+
+### 3. **Optional: Additional Database Support**
+- Add MySQL configuration example alongside H2
+- Show how locking behaves with real databases
+
+## Simple Success Criteria
+- REST endpoints work and demonstrate locking behavior
+- Clear documentation with examples
+- Easy to run and understand for educational purposes
+
 ---
 
 This document will be updated as the project evolves.
