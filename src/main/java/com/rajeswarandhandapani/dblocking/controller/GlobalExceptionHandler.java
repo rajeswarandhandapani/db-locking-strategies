@@ -36,6 +36,20 @@ public class GlobalExceptionHandler {
             .body("Could not acquire lock on the resource. Please try again.");
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        logger.error("IllegalArgumentException caught by global handler: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
+        logger.error("IllegalStateException caught by global handler: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(e.getMessage());
+    }
+
     @ExceptionHandler(InterruptedException.class)
     public ResponseEntity<String> handleInterruptedException(InterruptedException e) {
         logger.error("InterruptedException caught by global handler: {}", e.getMessage());
