@@ -55,7 +55,7 @@ public class TicketService {
         }
         
         // Simulate some processing time
-        Thread.sleep(2000);
+        Thread.sleep(10000);
         
         ticket.setBooked(true);
         Ticket savedTicket = ticketRepository.save(ticket);
