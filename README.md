@@ -1,8 +1,109 @@
 # Database Locking Strategies Demo
 
+**Understanding Concurrency Control in Enterprise Applications**
+
+![Status](https://img.shields.io/badge/Status-Production--Ready-green)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen)
+![JPA](https://img.shields.io/badge/JPA-Hibernate-blue)
+
+## Overview
+
 A Spring Boot application that demonstrates various database locking strategies through practical examples. This project serves as a comprehensive guide for understanding when and how to implement different locking mechanisms in concurrent applications.
 
-## 🎯 Overview
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Client["👥 Concurrent Users"]
+        User1["User 1"]
+        User2["User 2"]
+    end
+
+    subgraph API["⚡ REST API"]
+        TicketController["Ticket Controller<br/>/api/tickets"]
+        InventoryController["Inventory Controller<br/>/api/inventory"]
+    end
+
+    subgraph Service["🔧 Service Layer"]
+        TicketService["Ticket Service<br/>Pessimistic Locking"]
+        InventoryService["Inventory Service<br/>Optimistic Locking"]
+    end
+
+    subgraph Repository["📦 Repository Layer"]
+        TicketRepo["Ticket Repository<br/>@Lock(PESSIMISTIC_WRITE)"]
+        InventoryRepo["Inventory Repository<br/>@Version field"]
+    end
+
+    subgraph Database["💾 H2 / MySQL"]
+        TicketTable["Ticket Table<br/>Row-Level Lock"]
+        InventoryTable["Inventory Table<br/>Version Column"]
+    end
+
+    User1 --> TicketController
+    User2 --> TicketController
+    User1 --> InventoryController
+    User2 --> InventoryController
+
+    TicketController --> TicketService
+    InventoryController --> InventoryService
+
+    TicketService --> TicketRepo
+    InventoryService --> InventoryRepo
+
+    TicketRepo -->|"SELECT FOR UPDATE"| TicketTable
+    InventoryRepo -->|"WHERE version = ?"| InventoryTable
+
+    style Client fill:#e3f2fd,stroke:#1976d2
+    style API fill:#fff3e0,stroke:#f57c00
+    style Service fill:#e8f5e9,stroke:#388e3c
+    style Repository fill:#fce4ec,stroke:#c2185b
+    style Database fill:#f3e5f5,stroke:#7b1fa2
+```
+
+## Locking Strategies
+
+```mermaid
+flowchart LR
+    subgraph Pessimistic["🔒 Pessimistic Locking"]
+        P1["1. Acquire Lock"] --> P2["2. Read Data"]
+        P2 --> P3["3. Modify Data"]
+        P3 --> P4["4. Release Lock"]
+        P5["Other Transactions<br/>WAIT"]
+    end
+
+    subgraph Optimistic["✨ Optimistic Locking"]
+        O1["1. Read Data + Version"] --> O2["2. Modify Data"]
+        O2 --> O3["3. Update WHERE version=X"]
+        O3 --> O4{Version Match?}
+        O4 -->|Yes| O5["4. Success"]
+        O4 -->|No| O6["4. Retry/Fail"]
+    end
+
+    style Pessimistic fill:#ffebee,stroke:#c62828
+    style Optimistic fill:#e8f5e9,stroke:#2e7d32
+```
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Pessimistic Locking** | Row-level locks with `@Lock(PESSIMISTIC_WRITE)` |
+| **Optimistic Locking** | Version-based concurrency with `@Version` annotation |
+| **Ticket Booking Demo** | High-contention scenario with pessimistic locks |
+| **Inventory Management** | Low-contention scenario with optimistic locks |
+| **Concurrent Testing** | Built-in tests for race condition scenarios |
+| **H2 Console** | In-memory database with web console |
+
+## When to Use Each Strategy
+
+| Aspect | Pessimistic Locking | Optimistic Locking |
+|--------|-------------------|-------------------|
+| **Performance** | Lower (locking overhead) | Higher (no locks during reads) |
+| **Concurrency** | Lower (blocks transactions) | Higher (concurrent reads) |
+| **Best for** | High contention, critical ops | Low contention, read-heavy |
+| **Failure handling** | Prevents conflicts | Requires retry logic |
+| **Use cases** | Banking, ticket booking | Inventory, user profiles |
 
 This project showcases two primary database locking strategies:
 
